@@ -11,6 +11,9 @@ var app = new Vue({
         loginPassword: ''
     },
     methods:{
+        changePage: function(new_page){
+            this.page = new_page;
+        },
         getSession: async function() {
             let response = await fetch(`${URL}/session`, {
                 method: "GET",
@@ -88,7 +91,8 @@ var app = new Vue({
             })
             if (response.status == 201) {
                 console.log("successful login");
-
+                data = await response.json()
+                this.changePage('welcome');
                 this.newUsername = '';
                 this.newPassword = '';
                 this.newName = '';

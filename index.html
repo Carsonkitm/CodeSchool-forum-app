@@ -11,19 +11,25 @@
 
   <body>
     <div id="app">
-      <div v-if="page == 'login'">
-        <h1>Login</h1>
-        Username: <input v-model="loginUsername" placeholder="Username"><br />
-        Password: <input v-model="loginPassword" type="password" placeholder="Password"><br />
-        <button @click="postSession">Log in</button><br>
-      </div>
+        <div v-if="page == 'login'">
+            <div>
+                <h1>Login</h1>
+                Username: <input v-model="loginUsername" placeholder="Username"><br />
+                Password: <input v-model="loginPassword" type="password" placeholder="Password"><br />
+                <button @click="postSession">Log in</button><br>
+            </div>
 
-      <div>
-        <h1>Sign Up</h1>
-        Full Name <input v-model="newName" placeholder="Name"><br>
-        Username <input v-model="newUsername" placeholder="Username"><br>
-        Password <input v-model="newPassword" type="password" placeholder="Password"><br>
-        <button @click="postUser">Sign Up</button>
+            <div>
+                <h1>Sign Up</h1>
+                Full Name <input v-model="newName" placeholder="Name"><br>
+                Username <input v-model="newUsername" placeholder="Username"><br>
+                Password <input v-model="newPassword" type="password" placeholder="Password"><br>
+                <button @click="postUser">Sign Up</button>
+            </div>
+      </div>
+      <div v-if="page == 'welcome'">
+        <h1>WELCOME</h1>
+
       </div>
 
     </div>
