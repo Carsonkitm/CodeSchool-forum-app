@@ -1,4 +1,3 @@
-const { response } = require("express");
 
 const URL = "https://forum2022.codeschool.cloud";
 
