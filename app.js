@@ -1,14 +1,19 @@
+const { response } = require("express");
+
 const URL = "https://forum2022.codeschool.cloud";
 
 var app = new Vue({
     el: "#app",
     data:{
-        page: 'login',
+        page: 'welcome',
         newName: '',
         newUsername: '',
         newPassword: '',
         loginUsername: '',
-        loginPassword: ''
+        loginPassword: '',
+        threadName: '',
+        threadDescription:'',
+        threadCategory:''
     },
     methods:{
         changePage: function(new_page){
@@ -87,7 +92,8 @@ var app = new Vue({
                 body: JSON.stringify(loginCredentials),
                 headers: {
                     "Content-Type": "application/json"
-                }
+                },
+                credentials: 'include'
             })
             if (response.status == 201) {
                 console.log("successful login");
@@ -100,6 +106,26 @@ var app = new Vue({
                 console.log("idk what this error could be")
             }
             
+        },
+
+        postThread: async function () {
+           let thread = {
+                name: this.threadName,
+                description: this.threadDescription,
+                category: this.threadCategory
+            }
+            response = await fetch(`${URL}/thread`,{ 
+            method: "POST",
+            body: JSON.stringify(thread),
+            credentials: 'include'
+        })
+        if(response.status == 201) {
+            console.log("succesful")
+            data = await response.json()
+        }else {
+            console.log("sum wrong")
+        }
+
         }
     },
     //as soon as app is created, created will run
