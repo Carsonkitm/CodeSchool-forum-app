@@ -1,3 +1,17 @@
 body{
-    align-items: center;
+    text-align: center;
+    background-color:#253540;
+}
+
+.thread{
+    border: solid 1px #D9D6D2;
+    border-radius: 25px;
+    background-color: #405F73;
+    color:;
+}
+.home_title{
+    color: #D9D6D2;
+}
+p{
+    border: 4px;
 }

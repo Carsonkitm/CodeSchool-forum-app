@@ -2,49 +2,60 @@ const URL = "https://forum2022.codeschool.cloud";
 
 var app = new Vue({
     el: "#app",
-    data:{
-        page: 'login',
-        newName: '',
-        newUsername: '',
-        newPassword: '',
-        loginUsername: '',
-        loginPassword: ''
+    data: {
+        page: "login",
+
+        loginEmailInput: "",
+        loginPasswordInput: "",
+
+        newEmailInput: "",
+        newPasswordInput: "",
+        newFullnameInput: "",
+
+        threads: [],
     },
-    methods:{
-        changePage: function(new_page){
-            this.page = new_page;
+    methods: {
+        // change the page that the user sees
+        setPage: function (page) {
+            this.page = page;
         },
-        getSession: async function() {
+
+        // GET /session - Ask the server if we are logged in
+        getSession: async function () {
             let response = await fetch(`${URL}/session`, {
                 method: "GET",
-                // this will save the cookie. Keeping people logged in, until the cookie is deleted
                 credentials: "include"
             });
 
-            //are we logged in?
-            if (response.status == 200){
+            // Are we logged in?
+            if (response.status == 200) {
+                // logged in :)
                 console.log("logged in");
                 let data = await response.json();
-                console.log("data", data);
+                console.log(data);
 
-            } else if(response.status == 401) {
-                console.log('not logged in');
+                // send the user to the home page
+                this.loadHomePage();
+                return;
+
+            } else if (response.status == 401) {
+                // Not logged in :(
+                console.log("Not logged in");
+                let data = await response.json();
+                console.log(data);
 
             } else {
-                console.log('WARNING! WARNING! ERROR when GETTING/session', response.status, response);
+                console.log("Some sort of error when GETTING /session:", response.status, response);
             }
         },
-
-        
-        // POST/session - attempt login
-        postSession: async function() {
+        // POST /session - Attempt to login
+        postSession: async function () {
             let loginCredentials = {
-                username: this.loginUsername,
-                password: this.loginPassword
+                username: this.loginEmailInput, 
+                password: this.loginPasswordInput
             };
-            
-            
-            let response = await fetch(`${URL}/session`,{
+
+            let response = await fetch(URL + "/session", {
                 method: "POST",
                 body: JSON.stringify(loginCredentials),
                 headers: {
@@ -53,58 +64,129 @@ var app = new Vue({
                 credentials: "include"
             });
 
-            //parse response body
+            // 1. parse response body
+            let body;
             try {
-                let body = response.json();
-                console.log(body);
-            } catch (error){
-                console.log("error with parsing body", error)
+                body = response.json();
+                // console.log(body);
+            } catch (error) {
+                console.log("Response body was not json.")
             }
 
+            // 2. check - was the login successful?
             if (response.status == 201) {
-                console.log("Succesful Login");
-                let data = await response.json();
-                this.loginUsername = '';
-                this.loginPassword = '';
+                // successful login
 
-            } else if (response.status == 400){
-                console.log("Unsuccesful Login");
+                // clear inputs
+                this.loginEmailInput = "";
+                this.loginPasswordInput = "";
 
-                this.loginPassword = '';
+                // take the user to the home page
+                this.loadHomePage();
+
+            } else if (response.status == 401) {
+                // unsuccessful login
+
+                // let the user know it was unsuccessful
+                alert("Unsuccessful login");
+
+                // clear password input
+                this.loginPasswordInput = "";
             } else {
-                console.log("some error when POSTING /session")
+                console.log("Some sort of error when POSTING /session:", response.status, response);
             }
         },
-        postUser: async function() {
-            let loginCredentials = {
-                username: this.newUsername,
-                password: this.newPassword,
-                fullname: this.newName
-            };
+        // POST /user - create new user
+        postUser: async function () {
+            let newUser = {
+                username: this.newEmailInput,
+                fullname: this.newFullnameInput,
+                password: this.newPasswordInput
+            }
 
-            response = await fetch(`${URL}/user`, {
+            let response = await fetch(URL + "/user", {
                 method: "POST",
-                body: JSON.stringify(loginCredentials),
+                body: JSON.stringify(newUser),
                 headers: {
                     "Content-Type": "application/json"
-                }
-            })
-            if (response.status == 201) {
-                console.log("successful login");
-                data = await response.json()
-                this.changePage('welcome');
-                this.newUsername = '';
-                this.newPassword = '';
-                this.newName = '';
-            } else if (response.status == 400 ){
-                console.log("idk what this error could be")
+                },
+                credentials: "include"
+            });
+
+            // parse the response body
+            let body;
+            try {
+                body = response.json();
+            } catch (error) {
+                console.error("Error parsing body as JSON:", error);
+                body = "An Unknown Error has occured";
             }
+
+            if (response.status == 201) {
+                // user successfully created
+                this.newEmailInput = "";
+                this.newFullnameInput = "";
+                this.newPasswordInput = "";
+
+                // send them back to the login page
+                this.setPage('login');
+            } else {
+                // error creating user
+                this.newPasswordInput = "";
+
+                // create notification
+
+            }
+        },
+        loadHomePage: async function () {
+            await this.getThread();
+            this.setPage('home');
+        },
+        getThread: async function () {
+            let response = await fetch(URL + "/thread", {
+                credentials: "include"
+            });
             
+            // check response status
+            if (response.status == 200) {
+                // successfully got the data
+                let body = await response.json();
+                this.threads = body;
+            } else {
+                console.error("Error fetching threads:", response.status);
+            }
+        },
+        deleteSingleThread: async function (id){
+            let response = await fetch(`${URL}/thread/${id}`,{
+                method: "DELETE",
+                credentials: 'include'
+            })
+             // check response status
+             if (response.status == 200) {
+                this.currentThread = await response.json();
+                this.loadThreadPage();
+            } else {
+                console.error("Error fetching individual request with id", id, "- status:", response.status);
+            }
+        },
+         loadThreadPage: async function () {
+            this.setPage("thread");
+        },
+        getSingleThread: async function (id) {
+            let response = await fetch(URL + "/thread/" + id, {
+                credentials: "include"
+            });
+
+            // check response status
+            if (response.status == 200) {
+                this.currentThread = await response.json();
+                this.loadThreadPage();
+            } else {
+                console.error("Error fetching individual request with id", id, "- status:", response.status);
+            }
         }
     },
-    //as soon as app is created, created will run
     created: function () {
-
         this.getSession();
     }
-});
+})
